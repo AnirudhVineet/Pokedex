@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokédex Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <style>
+        .flash {
+            font-family: 'Press Start 2P', cursive;
+            color: #000000bd;
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 6px 12px;
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+
+        @keyframes flashAnim {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Display flashed messages at the top of the container -->
+        <div class="pkmn"  onclick="Close(this)" style="cursor:pointer">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="flash">{{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <script>
+            function Close(element) {
+                element.style.display = "none";
+            }
+            </script>
+        </div>
+        <h1>Welcome to the Pokédex</h1>
+        <form action="{{ url_for('search') }}" method="post">
+            <input type="text" id="name" name="name" placeholder="Enter Pokémon name" required>
+            <button type="submit">Search</button>
+        </form>
+        <a href="{{ url_for('test') }}" 
+        style="
+            color: gray; 
+            font-size: 12px; 
+            text-decoration: underline; 
+            cursor: pointer;
+        ">
+        Test Mic
+        </a>
+
+    </div>
+</body>
+</html>

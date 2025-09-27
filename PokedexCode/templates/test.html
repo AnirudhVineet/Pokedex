@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokédex Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <style>
+        .flash {
+            font-family: 'Press Start 2P', cursive;
+            color: #000000bd;
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 6px 12px;
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            background-color: rgba(255, 0, 0, 0.1);
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .flash.hide {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        @keyframes flashAnim {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Display flashed messages -->
+        <div class="pkmn">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="flash" onclick="Close(this)">{{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Voice Search Button -->
+<!-- Voice Search Button -->
+<button onclick="voiceSearch()">🎤 Voice Search</button>
+<canvas id="voice-canvas" width="400" height="100"></canvas>
+
+<style>
+#voice-canvas {
+    width: 100%;
+    max-width: 600px;
+    height: 100px;
+    background-color: #111;
+    display: block;
+    margin-top: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 20px #00ff00aa inset;
+}
+</style>
+
+<script>
+let audioContext, analyser, microphone, dataArray, canvas, ctx, animationId;
+
+function voiceSearch() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Your browser does not support speech recognition.");
+        return;
+    }
+
+    canvas = document.getElementById('voice-canvas');
+    ctx = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+
+            drawWaveform();
+        })
+        .catch(err => {
+            alert("Microphone access denied or not found.");
+            console.error(err);
+        });
+
+    // Speech recognition
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function(event) {
+        let name = event.results[0][0].transcript.toLowerCase();
+        name = name.replace(/\s+/g, '');
+
+        cancelAnimationFrame(animationId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/voice';
+        const input = document.createElement('input');
+        input.name = 'name';
+        input.value = name;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    recognition.onerror = function(event) {
+        cancelAnimationFrame(animationId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        alert("Speech recognition error: " + event.error);
+    };
+
+    recognition.start();
+}
+
+// Draw reactive bars instead of waveform line
+function drawWaveform() {
+    animationId = requestAnimationFrame(drawWaveform);
+
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const barWidth = (canvas.width / dataArray.length) * 2.5;
+    let x = 0;
+
+    for (let i = 0; i < dataArray.length; i++) {
+        const barHeight = dataArray[i] * 0.8;
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+        gradient.addColorStop(0, '#00ff00');
+        gradient.addColorStop(1, '#00ffff');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        x += barWidth + 1;
+    }
+}
+</script>
+
+
+</body>
+</html>

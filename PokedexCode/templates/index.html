@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokédex</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pokemon.css') }}">
+</head>
+<body>
+    <div class="pokedex-wrap">
+        <header class="pokedex-header" onclick= "goHome()" style="cursor:pointer;">
+            POKéDEX
+        </header>
+
+        <script>
+        function goHome() {
+            window.location.href = "{{ url_for('home') }}";  // Flask route for home.html
+        }
+        </script>
+
+        <div class="pokedex-body">
+            <figure class="pkdx-sprite">
+                {% if image_url %}
+                    <img src="{{ image_url }}" alt="{{ row['Name'] }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='placeholder.png') }}" alt="Pokémon">
+                {% endif %}
+            </figure>
+
+            <table class="pokedex-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in row.items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td class="stat">{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
