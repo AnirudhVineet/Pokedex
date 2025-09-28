@@ -4,7 +4,7 @@ from collections import OrderedDict
 from thefuzz import process
 
 app = Flask(__name__)
-df = pd.read_csv("Pokedex/Pokemon.csv")
+df = pd.read_csv("Pokemon.csv")
 app.secret_key = "1n9ru48"
 
 # make sure names don’t have trailing spaces
